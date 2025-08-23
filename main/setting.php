@@ -3,13 +3,40 @@
 //***********************************
 //setting section
 //***********************************
+
+// ИСПРАВЛЕННАЯ ЛОГИКА: Получаем текущее значение согласия на рассылку
+$newsletterAgreement = 'N'; // По умолчанию ВЫКЛЮЧЕНО
+
+if ($USER->IsAuthorized()) {
+    global $USER;
+    $userID = $USER->GetID();
+    if ($userID) {
+        $rsUser = CUser::GetByID($userID);
+        if ($arUser = $rsUser->Fetch()) {
+            // Проверяем пользовательское поле
+            $fieldValue = $arUser["UF_NEWSLETTER_AGREEMENT"] ?? '';
+            
+            // Приводим к единому формату
+            if ($fieldValue == '1' || $fieldValue == 'Y' || $fieldValue === 1 || $fieldValue === true) {
+                $newsletterAgreement = 'Y';
+            } else {
+                $newsletterAgreement = 'N';
+            }
+        }
+    }
+} else {
+    // Для неавторизованных пользователей - по умолчанию включено только при новой подписке
+    if (!$arResult["ID"]) {
+        $newsletterAgreement = 'Y'; // Только для новых подписок
+    }
+}
 ?>
 <form action="<?=$arResult["FORM_ACTION"]?>" method="post">
 <?echo bitrix_sessid_post();?>
 <table width="100%" border="0" cellpadding="0" cellspacing="0" class="data-table top">
 <thead><tr><td colspan="2"><h4><?echo GetMessage("subscr_title_settings")?></h4></td></tr></thead>
 <tr valign="top">
-	<td class="left_blocks">
+	<td class="left_blocks" style="width: 100% !important;">
 		<div class="form-control">
 			<label><?echo GetMessage("subscr_email")?> <span class="star">*</span></label>
 			<input type="text" name="EMAIL" value="<?=$arResult["SUBSCRIPTION"]["EMAIL"]!=""?$arResult["SUBSCRIPTION"]["EMAIL"]:$arResult["REQUEST"]["EMAIL"];?>" size="30" maxlength="255" />
@@ -31,8 +58,20 @@
 		<div class="filter label_block radio">
 			<input type="radio" name="FORMAT" id="txt" value="text"<?if($arResult["SUBSCRIPTION"]["FORMAT"] == "text") echo " checked"?> /><label for="txt"><?echo GetMessage("subscr_text")?></label>&nbsp;/&nbsp;<input type="radio" name="FORMAT" id="html" value="html"<?if($arResult["SUBSCRIPTION"]["FORMAT"] == "html") echo " checked"?> /><label for="html">HTML</label>
 		</div>
+
+		<!-- СОГЛАСИЕ НА РАССЫЛКУ -->
+		<h5>Согласие на рассылку</h5>
+		<div class="filter label_block">
+			<input type="checkbox" id="newsletter_agreement" name="NEWSLETTER_AGREEMENT" value="Y" <?=($newsletterAgreement == 'Y' || $newsletterAgreement == '1') ? 'checked' : ''?> />
+			<label for="newsletter_agreement">
+				Согласие на получение рекламной информации по электронной почте и SMS
+			</label>
+		</div>
+		<div class="more_text_small">
+			<a href="/privacy-policy/" target="_blank">Подробнее о согласии на рассылку</a>
+		</div>
 	</td>
-	<td class="right_blocks">
+	<td class="right_blocks" style="display: none;">
 		<div class="more_text_small">
 			<?echo GetMessage("subscr_settings_note1")?><br/>
 			<?echo GetMessage("subscr_settings_note2")?>

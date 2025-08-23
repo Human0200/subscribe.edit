@@ -66,4 +66,8 @@ $MESS ['subscr_pass_button'] = "Выслать";
 $MESS ['subscr_CAPTCHA_REGF_TITLE'] = "Защита от автоматической регистрации";
 $MESS ['subscr_CAPTCHA_REGF_PROMT'] = "Введите слово на картинке";
 $MESS ['adm_reg_butt'] = "Регистрация";
+$MESS['subscr_newsletter_agreement'] = "Согласие на рассылку";
+$MESS['subscr_newsletter_agreement_text'] = "Согласие на получение рекламной информации по электронной почте и SMS";
+$MESS['subscr_newsletter_agreement_note'] = "Вы можете отозвать согласие в любой момент.";
+$MESS['subscr_privacy_policy_link'] = "Подробнее о политике конфиденциальности";
 ?>

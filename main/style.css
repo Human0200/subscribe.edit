@@ -1,3 +1,4 @@
+
 div.subscribe-edit .red {
 	color:red;
 }
@@ -10,4 +11,36 @@ div.subscribe-edit .errorcolor {
 div.subscribe-edit .successcolor {
 	color:green;
 }
-	
+
+/* Стили для согласия на рассылку */
+div.subscribe-edit .newsletter-agreement {
+	margin-top: 15px;
+	padding: 10px;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 4px;
+}
+
+div.subscribe-edit .newsletter-agreement h5 {
+	margin-bottom: 10px;
+	color: #495057;
+}
+
+div.subscribe-edit .newsletter-agreement .filter.label_block {
+	margin-bottom: 5px;
+}
+
+div.subscribe-edit .newsletter-agreement .more_text_small {
+	font-size: 11px;
+	line-height: 1.4;
+	color: #6c757d;
+}
+
+div.subscribe-edit .newsletter-agreement .more_text_small a {
+	color: #007bff;
+	text-decoration: none;
+}
+
+div.subscribe-edit .newsletter-agreement .more_text_small a:hover {
+	text-decoration: underline;
+}
