@@ -79,25 +79,56 @@ if ($USER->IsAuthorized()) {
 	</td>
 </tr>
 <tfoot><tr><td colspan="2">
-	<?global $arTheme;?>
-	<?if($arTheme["SHOW_LICENCE"]["VALUE"] == "Y" && !$arResult["ID"] ):?>
-		<div class="subscribe_licenses">
-			<div class="licence_block filter label_block">
-				<?if($arResult["ERROR"] && !$_POST["licenses_subscribe"]):?>
-					<label id="licenses_subscribe-error" class="error" for="licenses_subscribe"><?=GetMessage("JS_REQUIRED_LICENSES");?></label>
-				<?endif;?>
-				<input type="checkbox" id="licenses_subscribe" <?=($_POST["licenses_subscribe"] ? "checked" : ($_POST ? "" : ($arTheme["SHOW_LICENCE"]["DEPENDENT_PARAMS"]["LICENCE_CHECKED"]["VALUE"] == "Y" ? "checked" : "")));?> name="licenses_subscribe" value="Y">
-				<label for="licenses_subscribe">
-					<?$APPLICATION->IncludeFile(SITE_DIR."include/licenses_text.php", Array(), Array("MODE" => "html", "NAME" => "LICENSES")); ?>
-				</label>
-			</div>
-		</div>
-	<?endif;?>
 	<div class="form-control">
 		<?$APPLICATION->IncludeFile(SITE_DIR."include/required_message.php", Array(), Array("MODE" => "html"));?>
 	</div>
-	<input type="submit" name="Save" class="btn btn-default" value="<?echo ($arResult["ID"] > 0? GetMessage("subscr_upd"):GetMessage("subscr_add"))?>" />
+	
+	<!-- НАША КНОПКА (видимая) -->
+	<button type="button" id="save_all_btn" class="btn btn-default">
+		<?echo ($arResult["ID"] > 0? GetMessage("subscr_upd"):GetMessage("subscr_add"))?>
+	</button>
+	
+	<!-- ОРИГИНАЛЬНАЯ КНОПКА (скрытая) -->
+	<input type="submit" name="Save" id="original_save_btn" class="btn btn-default" value="<?echo ($arResult["ID"] > 0? GetMessage("subscr_upd"):GetMessage("subscr_add"))?>" style="display: none;" />
 	<input type="reset" class="btn btn-default white" value="<?echo GetMessage("subscr_reset")?>" name="reset" />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var saveAllBtn = document.getElementById('save_all_btn');
+    var originalSaveBtn = document.getElementById('original_save_btn');
+    
+    if (saveAllBtn && originalSaveBtn) {
+        saveAllBtn.addEventListener('click', function() {
+            var checkbox = document.getElementById('newsletter_agreement');
+            var isChecked = checkbox ? checkbox.checked : false;
+            
+            // Показываем что идет сохранение
+            saveAllBtn.textContent = 'Сохранение...';
+            saveAllBtn.disabled = true;
+            
+            // Сначала сохраняем согласие
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/local/ajax/save_newsletter_agreement.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = function() {
+                console.log('Agreement save response:', xhr.responseText);
+                
+                // После сохранения согласия нажимаем настоящий submit
+                originalSaveBtn.click();
+            };
+            
+            xhr.onerror = function() {
+                console.error('Agreement save failed');
+                // Даже при ошибке сохранения согласия продолжаем с основной формой
+                originalSaveBtn.click();
+            };
+            
+            xhr.send('agreement=' + (isChecked ? 'Y' : 'N'));
+        });
+    }
+});
+</script>
 </td></tr></tfoot>
 </table>
 <input type="hidden" name="PostAction" value="<?echo ($arResult["ID"]>0? "Update":"Add")?>" />
