@@ -79,6 +79,17 @@ if ($USER->IsAuthorized()) {
 	</td>
 </tr>
 <tfoot><tr><td colspan="2">
+	<?global $arTheme;?>
+	<?if($arTheme["SHOW_LICENCE"]["VALUE"] == "Y" && !$arResult["ID"] ):?>
+		<div class="subscribe_licenses">
+			<div class="licence_block filter label_block" style="display: none;">
+				<input type="checkbox" id="licenses_subscribe" <?=($newsletterAgreement == 'Y' || $newsletterAgreement == '1') ? 'checked' : ''?> name="licenses_subscribe" value="Y">
+				<label for="licenses_subscribe">
+					<?$APPLICATION->IncludeFile(SITE_DIR."include/licenses_text.php", Array(), Array("MODE" => "html", "NAME" => "LICENSES")); ?>
+				</label>
+			</div>
+		</div>
+	<?endif;?>
 	<div class="form-control">
 		<?$APPLICATION->IncludeFile(SITE_DIR."include/required_message.php", Array(), Array("MODE" => "html"));?>
 	</div>
@@ -96,11 +107,26 @@ if ($USER->IsAuthorized()) {
 document.addEventListener('DOMContentLoaded', function() {
     var saveAllBtn = document.getElementById('save_all_btn');
     var originalSaveBtn = document.getElementById('original_save_btn');
+    var newsletterCheckbox = document.getElementById('newsletter_agreement');
+    var licensesCheckbox = document.getElementById('licenses_subscribe');
+    
+    // Синхронизация значений при загрузке страницы
+    if (newsletterCheckbox && licensesCheckbox) {
+        licensesCheckbox.checked = newsletterCheckbox.checked;
+    }
+    
+    // Синхронизация значений при изменении основного чекбокса
+    if (newsletterCheckbox) {
+        newsletterCheckbox.addEventListener('change', function() {
+            if (licensesCheckbox) {
+                licensesCheckbox.checked = this.checked;
+            }
+        });
+    }
     
     if (saveAllBtn && originalSaveBtn) {
         saveAllBtn.addEventListener('click', function() {
-            var checkbox = document.getElementById('newsletter_agreement');
-            var isChecked = checkbox ? checkbox.checked : false;
+            var isChecked = newsletterCheckbox ? newsletterCheckbox.checked : false;
             
             // Показываем что идет сохранение
             saveAllBtn.textContent = 'Сохранение...';
