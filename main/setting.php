@@ -115,15 +115,105 @@ document.addEventListener('DOMContentLoaded', function() {
         licensesCheckbox.checked = newsletterCheckbox.checked;
     }
     
-    // Синхронизация значений при изменении основного чекбокса
+    // АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при изменении галочки
     if (newsletterCheckbox) {
         newsletterCheckbox.addEventListener('change', function() {
+            var isChecked = this.checked;
+            
+            // Синхронизируем с лицензиями
             if (licensesCheckbox) {
-                licensesCheckbox.checked = this.checked;
+                licensesCheckbox.checked = isChecked;
             }
+            
+            // Показываем индикатор загрузки
+            var originalText = newsletterCheckbox.parentElement.querySelector('label').innerHTML;
+            newsletterCheckbox.parentElement.querySelector('label').innerHTML = 'Сохранение...';
+            newsletterCheckbox.disabled = true;
+            
+            // Отправляем AJAX запрос для сохранения согласия
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/local/ajax/save_newsletter_agreement.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = function() {
+                newsletterCheckbox.disabled = false;
+                newsletterCheckbox.parentElement.querySelector('label').innerHTML = originalText;
+                
+                console.log('Response status:', xhr.status);
+                console.log('Response text:', xhr.responseText);
+                
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log('Agreement save response:', response);
+                        
+                        if (response.success) {
+                            // Показываем сообщение об успехе
+                            showMessage('Согласие сохранено!', 'success');
+                        } else {
+                            // При ошибке возвращаем галочку в исходное состояние
+                            newsletterCheckbox.checked = !isChecked;
+                            if (licensesCheckbox) {
+                                licensesCheckbox.checked = !isChecked;
+                            }
+                            showMessage('Ошибка сохранения: ' + (response.error || response.message || 'Неизвестная ошибка'), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Parse error:', e);
+                        console.log('Raw response:', xhr.responseText);
+                        // При ошибке парсинга возвращаем галочку
+                        newsletterCheckbox.checked = !isChecked;
+                        if (licensesCheckbox) {
+                            licensesCheckbox.checked = !isChecked;
+                        }
+                        showMessage('Ошибка обработки ответа сервера', 'error');
+                    }
+                } else {
+                    // HTTP ошибка
+                    newsletterCheckbox.checked = !isChecked;
+                    if (licensesCheckbox) {
+                        licensesCheckbox.checked = !isChecked;
+                    }
+                    showMessage('Ошибка сервера (HTTP ' + xhr.status + ')', 'error');
+                }
+            };
+            
+            xhr.onerror = function() {
+                newsletterCheckbox.disabled = false;
+                newsletterCheckbox.parentElement.querySelector('label').innerHTML = originalText;
+                
+                // При ошибке возвращаем галочку в исходное состояние
+                newsletterCheckbox.checked = !isChecked;
+                if (licensesCheckbox) {
+                    licensesCheckbox.checked = !isChecked;
+                }
+                showMessage('Ошибка соединения с сервером', 'error');
+            };
+            
+            xhr.send('agreement=' + (isChecked ? 'Y' : 'N'));
         });
     }
     
+    // Функция показа сообщений
+    function showMessage(text, type) {
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'ajax-message ' + type;
+        messageDiv.innerHTML = text;
+        messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: ' + 
+            (type === 'success' ? '#d4edda' : '#f8d7da') + '; color: ' + 
+            (type === 'success' ? '#155724' : '#721c24') + '; padding: 10px 15px; border-radius: 4px; z-index: 9999;';
+        
+        document.body.appendChild(messageDiv);
+        
+        // Убираем сообщение через 3 секунды
+        setTimeout(function() {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
+        }, 3000);
+    }
+    
+    // Обработчик кнопки сохранения всей формы
     if (saveAllBtn && originalSaveBtn) {
         saveAllBtn.addEventListener('click', function() {
             var isChecked = newsletterCheckbox ? newsletterCheckbox.checked : false;
