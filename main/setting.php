@@ -68,7 +68,7 @@ if ($USER->IsAuthorized()) {
 			</label>
 		</div>
 		<div class="more_text_small">
-			<a href="/privacy-policy/" target="_blank">Подробнее о согласии на рассылку</a>
+			<a href="/company/soglasheniya/podpiska-na-reklamu/" target="_blank">Подробнее о согласии на рассылку</a>
 		</div>
 	</td>
 	<td class="right_blocks" style="display: none;">
